@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mahmoud.popularmovies.Adapter.MoviesAdapter;
 import com.mahmoud.popularmovies.Control.DB;
@@ -55,10 +56,17 @@ public class MoviesActivity extends AppCompatActivity implements AdapterView.OnI
 
         init();
 
-        if(savedInstanceState != null)
-            restoreInstanceState(savedInstanceState);
+        if(Keys.API_KEY.equals("")) {
+            pbLoading.setVisibility(View.GONE);
+            Toast.makeText(this, getResources().getString(R.string.set_your_api_key_first),
+                    Toast.LENGTH_LONG).show();
+        }
         else {
-            getMoviesByMostPopular(page);
+            if (savedInstanceState != null)
+                restoreInstanceState(savedInstanceState);
+            else {
+                getMoviesByMostPopular(page);
+            }
         }
     }
 
@@ -167,6 +175,7 @@ public class MoviesActivity extends AppCompatActivity implements AdapterView.OnI
     }
 
     private void getMyFavourites(Activity activity, String... params) {
+        pbLoading.setVisibility(View.GONE);
         getSupportActionBar().setTitle(getResources().getString(R.string.action_my_favourites));
         listMovies = null;
         adapter = null;
@@ -215,27 +224,34 @@ public class MoviesActivity extends AppCompatActivity implements AdapterView.OnI
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.action_most_popular:
-                listMovies = null;
-                adapter = null;
-                page = 1;
-                getMoviesByMostPopular(page);
-                listType = MOST_POPULAR;
-                break;
+        if(Keys.API_KEY.equals("")) {
+            pbLoading.setVisibility(View.GONE);
+            Toast.makeText(this, getResources().getString(R.string.set_your_api_key_first),
+                    Toast.LENGTH_LONG).show();
+        }
+        else {
+            switch (item.getItemId()) {
+                case R.id.action_most_popular:
+                    listMovies = null;
+                    adapter = null;
+                    page = 1;
+                    getMoviesByMostPopular(page);
+                    listType = MOST_POPULAR;
+                    break;
 
-            case R.id.action_top_rated:
-                listMovies = null;
-                adapter = null;
-                page = 1;
-                getMoviesByTopRated(page);
-                listType = TOP_RATED;
-                break;
+                case R.id.action_top_rated:
+                    listMovies = null;
+                    adapter = null;
+                    page = 1;
+                    getMoviesByTopRated(page);
+                    listType = TOP_RATED;
+                    break;
 
-            case R.id.action_my_favourites:
-                getMyFavourites(this, db.getPo_id(), db.getPo_title(), db.getPo_thumbnail(),
-                        db.getPo_release_date(), db.getPo_vote_average(), db.getPo_overview());
-                break;
+                case R.id.action_my_favourites:
+                    getMyFavourites(this, db.getPo_id(), db.getPo_title(), db.getPo_thumbnail(),
+                            db.getPo_release_date(), db.getPo_vote_average(), db.getPo_overview());
+                    break;
+            }
         }
 
         return super.onOptionsItemSelected(item);

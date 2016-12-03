@@ -20,4 +20,5 @@
     <string name="reviewed_by">"A movie review by "</string>
     <string name="no_movies">No Movies</string>
     <string name="no_favourites">No movies in your favourite</string>
+    <string name="set_your_api_key_first">You should set your api key inside the code (class name: "Keys" inside the Package name: "Control")</string>
 </resources>

@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">PopularMovies</string>
+
+    <string name="title_activity_movies">Popular Movies</string>
+    <string name="title_activity_movies2">Top Rated Movies</string>
+    <string name="title_activity_movie_details">Movie Detail</string>
+    <string name="title_activity_show_reviews">Reviews</string>
+
+    <string name="internet_connection_error">No internet connection</string>
+
+    <string name="action_most_popular">Most Popular</string>
+    <string name="action_top_rated">Top Rated</string>
+    <string name="action_my_favourites">My Favourites</string>
+    <string name="trailers">Trailers</string>
+    <string name="show_reviews">Show Reviews</string>
+    <string name="add_to_favourite">Mark as Favourite</string>
+    <string name="remove_from_favourite">Remove from Favourite</string>
+
+    <string name="no_reviews">No Reviews</string>
+    <string name="reviewed_by">"A movie review by "</string>
+    <string name="no_movies">No Movies</string>
+    <string name="no_favourites">No movies in your favourite</string>
+</resources>

@@ -74,16 +74,18 @@ public class MovieDetailsActivity extends AppCompatActivity implements
         final ViewGroup viewGroup = (ViewGroup) ((ViewGroup) activity
                 .findViewById(android.R.id.content)).getChildAt(0);
 
-        listTrailers = new ArrayList<>();
-        listTrailers.addAll(list);
+        if(list != null) {
+            listTrailers = new ArrayList<>();
+            listTrailers.addAll(list);
 
-        lvTrailers = (ListView) viewGroup.findViewById(R.id.lv_trailers);
-        pbLoading = (ProgressBar) viewGroup.findViewById(R.id.pb_loading);
+            lvTrailers = (ListView) viewGroup.findViewById(R.id.lv_trailers);
+            pbLoading = (ProgressBar) viewGroup.findViewById(R.id.pb_loading);
 
-        pbLoading.setVisibility(View.GONE);
+            pbLoading.setVisibility(View.GONE);
 
-        TrailersAdapter trailersAdapter = new TrailersAdapter(activity, listTrailers);
-        lvTrailers.setAdapter(trailersAdapter);
+            TrailersAdapter trailersAdapter = new TrailersAdapter(activity, listTrailers);
+            lvTrailers.setAdapter(trailersAdapter);
+        }
     }
 
     private void fillUI() {

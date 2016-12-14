@@ -5,7 +5,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.mahmoud.popularmovies.API.TrailersAPI;
-import com.mahmoud.popularmovies.Activity.MovieDetailsActivity;
+import com.mahmoud.popularmovies.Activity.MovieDetailsFragment;
 import com.mahmoud.popularmovies.Model.TrailersModel;
 import com.mahmoud.popularmovies.R;
 
@@ -41,7 +41,7 @@ public class TrailersControl {
                 Log.e(TAG, "ResponseMessage: " + response.message());
 
                 if(response.code() == Keys.SUCCESS){
-                    MovieDetailsActivity movieDetailsActivity = new MovieDetailsActivity();
+                    MovieDetailsFragment movieDetailsActivity = new MovieDetailsFragment();
                     movieDetailsActivity.getTrailersCallback(activity, response.body().getResults());
                 }
             }
@@ -51,7 +51,7 @@ public class TrailersControl {
                 Log.e(TAG, "onFailure: " + t.getMessage());
                 Toast.makeText(activity, activity.getResources().getString(
                         R.string.internet_connection_error), Toast.LENGTH_SHORT).show();
-                MovieDetailsActivity movieDetailsActivity = new MovieDetailsActivity();
+                MovieDetailsFragment movieDetailsActivity = new MovieDetailsFragment();
                 movieDetailsActivity.getTrailersCallback(activity, null);
             }
         });

@@ -5,7 +5,7 @@ package com.mahmoud.popularmovies.Control;
  */
 
 public class Keys {
-    public static final String API_KEY = ""; // Set you API key here.
+    public static final String API_KEY = "";
 
     public static final String DOMAIN = "http://api.themoviedb.org/3/";
     public static final String BASE_IMAGE_URL = "http://image.tmdb.org/t/p/";

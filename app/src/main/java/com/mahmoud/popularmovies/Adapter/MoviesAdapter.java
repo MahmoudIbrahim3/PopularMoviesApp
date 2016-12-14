@@ -73,7 +73,7 @@ public class MoviesAdapter extends BaseAdapter {
         if(densityDpi >= 600) {
             Picasso.with(activity)
                     .load(Keys.BASE_IMAGE_URL + "w185" + listMovies.get(position).getPosterPath())
-                    .resize(Utils.SCREEN_WIDTH / 4, Utils.SCREEN_HEIGHT / 4)
+                    .resize(Utils.SCREEN_WIDTH / 6, Utils.SCREEN_HEIGHT / 6)
                     .into(ivPoster);
         }
         else{

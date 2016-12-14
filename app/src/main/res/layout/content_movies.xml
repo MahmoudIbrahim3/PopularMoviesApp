@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.mahmoud.popularmovies.Activity.MoviesActivity"
+    tools:context="com.mahmoud.popularmovies.Activity.MoviesFragment"
     tools:showIn="@layout/activity_movies"
     android:orientation="vertical">
 

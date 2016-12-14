@@ -1,14 +1,14 @@
 package com.mahmoud.popularmovies.Activity;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -16,11 +16,9 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.mahmoud.popularmovies.Adapter.MoviesAdapter;
 import com.mahmoud.popularmovies.Control.DB;
-import com.mahmoud.popularmovies.Control.Keys;
 import com.mahmoud.popularmovies.Control.MoviesControl;
 import com.mahmoud.popularmovies.Model.MoviesResultModel;
 import com.mahmoud.popularmovies.R;
@@ -28,111 +26,158 @@ import com.mahmoud.popularmovies.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MoviesActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, AbsListView.OnScrollListener {
+import static com.mahmoud.popularmovies.Activity.MainActivity.isTwoPane;
+import static com.mahmoud.popularmovies.Activity.MainActivity.listType;
 
-    private GridView gvMmovies;
-    private static MoviesAdapter adapter;
+public class MoviesFragment extends Fragment implements AdapterView.OnItemClickListener,
+        AbsListView.OnScrollListener {
+
+    private static GridView gvMmovies;
+    public static MoviesAdapter adapter;
     private ViewGroup viewGroup;
-    private static ArrayList<MoviesResultModel> listMovies  = null;
+    public static ArrayList<MoviesResultModel> listMovies  = null;
     private ProgressBar pbLoading;
-    private String TAG = "MoviesActivity";
+    private String TAG = "MoviesFragment";
     private Toolbar toolbar;
     private TextView tvNoMovies;
     private DB db;
     private static Activity activity;
-    private int MOST_POPULAR = 0;
-    private int TOP_RATED = 1;
-    private int MY_FAVOURITE = 2;
-    private int listType = MOST_POPULAR;
-    private static int page = 1;
+    //private int listType;
+    public static int page = 1;
     private int preLast = -1;
     private ProgressBar pbFooterLoading;
+    private View view;
+    static OnHeadlineSelectedListener mCallback;
+
+    // The container Activity must implement this interface so the frag can deliver messages
+    public interface OnHeadlineSelectedListener {
+        /** Called by HeadlinesFragment when a list item is selected */
+        public void onArticleSelected(int position);
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.e(TAG, "onCreate");
-        setContentView(R.layout.activity_movies);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        view  = inflater.inflate(R.layout.content_movies, container, false);
+        return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
         init();
+        getMovies();
+        //getIntentData();
+    }
 
-        if(Keys.API_KEY.equals("")) {
-            pbLoading.setVisibility(View.GONE);
-            Toast.makeText(this, getResources().getString(R.string.set_your_api_key_first),
-                    Toast.LENGTH_LONG).show();
+    private void getMovies() {
+        if (listType == MainActivity.MOST_POPULAR) {
+            getMoviesByMostPopular(activity, page);
         }
-        else {
-            if (savedInstanceState != null)
-                restoreInstanceState(savedInstanceState);
-            else {
-                getMoviesByMostPopular(page);
-            }
+        else if(listType == MainActivity.TOP_RATED) {
+            getMoviesByTopRated(activity, page);
+        }
+        else if(listType == MainActivity.MY_FAVOURITE) {
+            getMyFavourites(activity, db.getPo_id(), db.getPo_title(), db.getPo_thumbnail(),
+                    db.getPo_release_date(), db.getPo_vote_average(), db.getPo_overview());
         }
     }
 
-    private void restoreInstanceState(Bundle savedInstanceState) {
-        listType = savedInstanceState.getInt("list_type");
-        page = savedInstanceState.getInt("page");
-        preLast = savedInstanceState.getInt("pre_last");
+    /*private void getIntentData() {
+        Bundle bundle = getArguments();
+        if (bundle != null)
+            listType = bundle.getInt("list_type");
+        else
+            listType = MainActivity.MOST_POPULAR;
 
-        adapter = null;
-        pbLoading.setVisibility(View.GONE);
-        tvNoMovies.setVisibility(View.GONE);
+        Log.e(TAG, "listType: " + listType);
 
-        setAdapter(this);
-    }
+        if (listType == MainActivity.MOST_POPULAR) {
+            listMovies = null;
+            adapter = null;
+            page = 1;
+            getMoviesByMostPopular(activity, page);
+        }
+        else if(listType == MainActivity.TOP_RATED) {
+            listMovies = null;
+            adapter = null;
+            page = 1;
+            getMoviesByTopRated(activity, page);
+        }
+        else if(listType == MainActivity.MY_FAVOURITE) {
+                getMyFavourites(activity, db.getPo_id(), db.getPo_title(), db.getPo_thumbnail(),
+                        db.getPo_release_date(), db.getPo_vote_average(), db.getPo_overview());
+        }
+    }*/
 
-    @Override
+    /*@Override
     public void onStart() {
         super.onStart();
         Log.e(TAG, "onStart");
         if(listType == MY_FAVOURITE) {
-            getMyFavourites(this, db.getPo_id(), db.getPo_title(), db.getPo_thumbnail(),
+            getMyFavourites(activity, db.getPo_id(), db.getPo_title(), db.getPo_thumbnail(),
                     db.getPo_vote_average(), db.getPo_release_date(), db.getPo_overview());
         }
-    }
+    }*/
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         super.onDestroy();
         Log.e(TAG, "onDestroy");
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
-
-        savedInstanceState.putInt("list_type", listType);
-        savedInstanceState.putInt("page", page);
-        savedInstanceState.putInt("pre_last", preLast);
-    }
-
     private void init() {
-        activity = this;
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        activity = getActivity();
+        /*toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);*/
         
-        gvMmovies = (GridView) findViewById(R.id.gv_movies);
-        pbLoading = (ProgressBar) findViewById(R.id.pb_loading);
-        pbFooterLoading = (ProgressBar) findViewById(R.id.pb_footer_loading);
-        tvNoMovies = (TextView) findViewById(R.id.tv_no_movies);
+        gvMmovies = (GridView) view.findViewById(R.id.gv_movies);
+        pbLoading = (ProgressBar) view.findViewById(R.id.pb_loading);
+        pbFooterLoading = (ProgressBar) view.findViewById(R.id.pb_footer_loading);
+        tvNoMovies = (TextView) view.findViewById(R.id.tv_no_movies);
 
         gvMmovies.setOnItemClickListener(this);
         gvMmovies.setOnScrollListener(this);
 
-        db = new DB(this);
+        listMovies = null;
+        adapter = null;
+        page = 1;
+
+        db = new DB(activity);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception.
+        try {
+            mCallback = (OnHeadlineSelectedListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnHeadlineSelectedListener");
+        }
     }
 
-    private void getMoviesByMostPopular(int page) {
-        getSupportActionBar().setTitle(getResources().getString(R.string.action_most_popular));
+    public void getMoviesByMostPopular(Activity activity, int page) {
+        if(listMovies == null) {
+            viewGroup = (ViewGroup) ((ViewGroup) activity
+                    .findViewById(android.R.id.content)).getChildAt(0);
+            pbLoading = (ProgressBar) viewGroup.findViewById(R.id.pb_loading);
+            pbLoading.setVisibility(View.VISIBLE);
+        }
+
         MoviesControl moviesControl = new MoviesControl();
-        moviesControl.getMovies(this, "popular", page);
+        moviesControl.getMovies(activity, "popular", page);
     }
 
-    private void getMoviesByTopRated(int page) {
-        getSupportActionBar().setTitle(getResources().getString(R.string.action_top_rated));
+    public void getMoviesByTopRated(Activity activity, int page) {
+        if(listMovies == null) {
+            viewGroup = (ViewGroup) ((ViewGroup) activity
+                    .findViewById(android.R.id.content)).getChildAt(0);
+            pbLoading = (ProgressBar) viewGroup.findViewById(R.id.pb_loading);
+            pbLoading.setVisibility(View.VISIBLE);
+        }
+
         MoviesControl moviesControl = new MoviesControl();
-        moviesControl.getMovies(this, "top_rated", page);
+        moviesControl.getMovies(activity, "top_rated", page);
     }
 
     public void showMovies(Activity activity, List<MoviesResultModel> list, int page) {
@@ -158,6 +203,10 @@ public class MoviesActivity extends AppCompatActivity implements AdapterView.OnI
             listMovies = new ArrayList<>();
             listMovies.addAll(list);
             setAdapter(activity);
+
+            Log.e(TAG, "isTwoPane: " + isTwoPane);
+            if(isTwoPane)
+                mCallback.onArticleSelected(0);
         }
         else {
             listMovies.addAll(list);
@@ -165,7 +214,7 @@ public class MoviesActivity extends AppCompatActivity implements AdapterView.OnI
         }
     }
 
-    private void setAdapter(Activity activity) {
+    public void setAdapter(Activity activity) {
         if(adapter == null) {
             adapter = new MoviesAdapter(activity, listMovies);
             gvMmovies.setAdapter(adapter);
@@ -174,12 +223,17 @@ public class MoviesActivity extends AppCompatActivity implements AdapterView.OnI
             adapter.notifyDataSetChanged();
     }
 
-    private void getMyFavourites(Activity activity, String... params) {
+    public void getMyFavourites(Activity activity, String... params) {
+        db = new DB(activity);
+        viewGroup = (ViewGroup) ((ViewGroup) activity
+                .findViewById(android.R.id.content)).getChildAt(0);
+        pbLoading = (ProgressBar) viewGroup.findViewById(R.id.pb_loading);
+        gvMmovies = (GridView) viewGroup.findViewById(R.id.gv_movies);
+
         pbLoading.setVisibility(View.GONE);
-        getSupportActionBar().setTitle(getResources().getString(R.string.action_my_favourites));
         listMovies = null;
         adapter = null;
-        listType = MY_FAVOURITE;
+        listType = MainActivity.MY_FAVOURITE;
 
         String str="select ";
 
@@ -211,6 +265,9 @@ public class MoviesActivity extends AppCompatActivity implements AdapterView.OnI
                 } while (cursor.moveToNext());
 
                 setAdapter(activity);
+
+                if(isTwoPane)
+                    mCallback.onArticleSelected(0);
             }
             else{
                 setAdapter(activity);
@@ -222,59 +279,24 @@ public class MoviesActivity extends AppCompatActivity implements AdapterView.OnI
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if(Keys.API_KEY.equals("")) {
-            pbLoading.setVisibility(View.GONE);
-            Toast.makeText(this, getResources().getString(R.string.set_your_api_key_first),
-                    Toast.LENGTH_LONG).show();
-        }
-        else {
-            switch (item.getItemId()) {
-                case R.id.action_most_popular:
-                    listMovies = null;
-                    adapter = null;
-                    page = 1;
-                    getMoviesByMostPopular(page);
-                    listType = MOST_POPULAR;
-                    break;
-
-                case R.id.action_top_rated:
-                    listMovies = null;
-                    adapter = null;
-                    page = 1;
-                    getMoviesByTopRated(page);
-                    listType = TOP_RATED;
-                    break;
-
-                case R.id.action_my_favourites:
-                    getMyFavourites(this, db.getPo_id(), db.getPo_title(), db.getPo_thumbnail(),
-                            db.getPo_release_date(), db.getPo_vote_average(), db.getPo_overview());
-                    break;
-            }
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }*/
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+
     }
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        MoviesResultModel model = listMovies.get(i);
-
-        Intent intent = new Intent(activity, MovieDetailsActivity.class);
-        intent.putExtra(Keys.INTENT_POSTER_ID, model.getId());
-        intent.putExtra(Keys.INTENT_POSTER_ORIGINAL_TITLE, model.getOriginalTitle());
-        intent.putExtra(Keys.INTENT_POSTER_THUMBNAIL, model.getPosterPath());
-        intent.putExtra(Keys.INTENT_POSTER_RELEASE_DATE, model.getReleaseDate());
-        intent.putExtra(Keys.INTENT_POSTER_VOTE_AVERAGE, model.getVoteAverage());
-        intent.putExtra(Keys.INTENT_POSTER_OVERVIEW, model.getOverview());
-        activity.startActivity(intent);
+        Log.e(TAG, "onItemClick: " + i);
+        // Notify the parent activity of selected item
+        mCallback.onArticleSelected(i);
     }
 
     @Override
@@ -299,10 +321,10 @@ public class MoviesActivity extends AppCompatActivity implements AdapterView.OnI
                     preLast = lastItem;
                     pbFooterLoading.setVisibility(View.VISIBLE);
 
-                    if(listType == MOST_POPULAR)
-                        getMoviesByMostPopular(page);
-                    else if(listType == TOP_RATED)
-                        getMoviesByTopRated(page);
+                    if(MainActivity.listType == MainActivity.MOST_POPULAR)
+                        getMoviesByMostPopular(activity, page);
+                    else if(MainActivity.listType == MainActivity.TOP_RATED)
+                        getMoviesByTopRated(activity, page);
                 }
                 else
                     Log.e("preLast", "preLast: " + preLast);

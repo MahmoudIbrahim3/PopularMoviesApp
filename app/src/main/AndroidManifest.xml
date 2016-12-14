@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".Activity.MoviesActivity"
+            android:name=".Activity.MainActivity"
             android:label="@string/title_activity_movies"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -22,10 +22,10 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".Activity.MovieDetailsActivity"
+        <!--<activity
+            android:name=".Activity.MovieDetailsFragment"
             android:label="@string/title_activity_movie_details"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>-->
 
         <activity
             android:name=".Activity.ReviewsActivity"

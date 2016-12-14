@@ -6,9 +6,11 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -22,6 +24,7 @@ import com.mahmoud.popularmovies.Control.DB;
 import com.mahmoud.popularmovies.Control.Keys;
 import com.mahmoud.popularmovies.Control.TrailersControl;
 import com.mahmoud.popularmovies.Control.Utils;
+import com.mahmoud.popularmovies.Model.MoviesResultModel;
 import com.mahmoud.popularmovies.Model.TrailersResultModel;
 import com.mahmoud.popularmovies.R;
 import com.squareup.picasso.Picasso;
@@ -29,10 +32,10 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MovieDetailsActivity extends AppCompatActivity implements
+public class MovieDetailsFragment extends Fragment implements
         AdapterView.OnItemClickListener, View.OnClickListener {
 
-    private String TAG = "MovieDetailsActivity";
+    private String TAG = "MovieDetailsFragment";
     private TextView tvReleaseDate;
     private TextView tvVoteAverage;
     private TextView tvOverview;
@@ -52,17 +55,56 @@ public class MovieDetailsActivity extends AppCompatActivity implements
     public final static String ARG_POSITION = "position";
     private Toolbar toolbar;
     private Activity activity;
+    private View view;
+    public static int mCurrentPosition = -1;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_details);
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
 
+        // Save the current article selection in case we need to recreate the fragment
+        outState.putInt(ARG_POSITION, mCurrentPosition);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // If activity recreated (such as from screen rotate), restore
+        // the previous article selection set by onSaveInstanceState().
+        // This is primarily necessary when in the two-pane layout.
+        if (savedInstanceState != null) {
+            mCurrentPosition = savedInstanceState.getInt(ARG_POSITION);
+        }
+
+        view  = inflater.inflate(R.layout.content_movie_details, container, false);
+        return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         init();
-        getIntentData();
-        checkThisMovieInFavourite(movieId);
-        fillUI();
-        getTrailers();
+        // During startup, check if there are arguments passed to the fragment.
+        // onStart is a good place to do this because the layout has already been
+        // applied to the fragment at this point so we can safely call the method
+        // below that sets the article text.
+        Bundle args = getArguments();
+        if (args != null) {
+            getIntentData();
+            checkThisMovieInFavourite(movieId);
+            fillUI();
+            getTrailers();
+        }
+        else if (mCurrentPosition != -1 && MoviesFragment.listMovies != null) {
+            // Set article based on saved instance state defined during onCreateView
+            updateMovieDetailsFragment(mCurrentPosition, MoviesFragment.listMovies.get(mCurrentPosition));
+        }
     }
 
     private void getTrailers() {
@@ -83,8 +125,10 @@ public class MovieDetailsActivity extends AppCompatActivity implements
 
             pbLoading.setVisibility(View.GONE);
 
-            TrailersAdapter trailersAdapter = new TrailersAdapter(activity, listTrailers);
-            lvTrailers.setAdapter(trailersAdapter);
+            if(lvTrailers != null) {
+                TrailersAdapter trailersAdapter = new TrailersAdapter(activity, listTrailers);
+                lvTrailers.setAdapter(trailersAdapter);
+            }
         }
     }
 
@@ -93,7 +137,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements
         tvVoteAverage.setText(movieVoteAverage + "/10");
         tvOverview.setText(movieOverview);
 
-        getSupportActionBar().setTitle(movieTitle);
+        //getSupportActionBar().setTitle(movieTitle);
 
         Picasso.with(activity)
                 .load(Keys.BASE_IMAGE_URL + "w185" + movieThumbnailPath)
@@ -103,9 +147,9 @@ public class MovieDetailsActivity extends AppCompatActivity implements
     }
 
     private void init() {
-        activity = this;
+        activity = getActivity();
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        /*toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -113,16 +157,16 @@ public class MovieDetailsActivity extends AppCompatActivity implements
             public void onClick(View view) {
                 finish();
             }
-        });
+        });*/
 
-        ivPoster = (ImageView) findViewById(R.id.iv_poster_thumbnail);
-        tvReleaseDate = (TextView) findViewById(R.id.tv_release_date);
-        tvVoteAverage = (TextView) findViewById(R.id.tv_vote_average);
-        tvOverview = (TextView) findViewById(R.id.tv_overview);
-        lvTrailers = (ListView) findViewById(R.id.lv_trailers);
-        pbLoading = (ProgressBar) findViewById(R.id.pb_loading);
-        btShowReviews = (TextView) findViewById(R.id.bt_show_reviews);
-        btAddToFavourite = (TextView) findViewById(R.id.bt_add_to_favourite);
+        ivPoster = (ImageView) view.findViewById(R.id.iv_poster_thumbnail);
+        tvReleaseDate = (TextView) view.findViewById(R.id.tv_release_date);
+        tvVoteAverage = (TextView) view.findViewById(R.id.tv_vote_average);
+        tvOverview = (TextView) view.findViewById(R.id.tv_overview);
+        lvTrailers = (ListView) view.findViewById(R.id.lv_trailers);
+        pbLoading = (ProgressBar) view.findViewById(R.id.pb_loading);
+        btShowReviews = (TextView) view.findViewById(R.id.bt_show_reviews);
+        btAddToFavourite = (TextView) view.findViewById(R.id.bt_add_to_favourite);
 
         lvTrailers.setOnItemClickListener(this);
         btShowReviews.setOnClickListener(this);
@@ -130,8 +174,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements
     }
 
     private void getIntentData(){
-        Intent intent = getIntent();
-        Bundle bundle = intent.getExtras();
+        Bundle bundle = getArguments();
 
         movieId = bundle.getInt(Keys.INTENT_POSTER_ID);
         movieTitle = bundle.getString(Keys.INTENT_POSTER_ORIGINAL_TITLE);
@@ -188,8 +231,21 @@ public class MovieDetailsActivity extends AppCompatActivity implements
         int status = db.getDb().delete(db.getPOSTER_TABLE(), whereC, new String[]{ "" + movieId});
         Log.e(TAG,"status: " + status);
 
-        if(status == 1)
-            activity.finish();
+        if(status == 1){
+            btAddToFavourite.setText(getResources().getString(R.string.add_to_favourite));
+
+            /*if(isTwoPane){
+                *//*MoviesFragment moviesFragment = new MoviesFragment();
+                moviesFragment.getMyFavourites(activity, db.getPo_id(), db.getPo_title(),
+                        db.getPo_thumbnail(), db.getPo_release_date(), db.getPo_vote_average(),
+                        db.getPo_overview());*//*
+            }
+            else {
+                MoviesFragment firstFragment = new MoviesFragment();
+                activity.getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, firstFragment).commit();
+            }*/
+        }
     }
 
     @Override
@@ -216,5 +272,20 @@ public class MovieDetailsActivity extends AppCompatActivity implements
             else
                 addToFavourite();
         }
+    }
+
+    public void updateMovieDetailsFragment(int position, MoviesResultModel model) {
+        mCurrentPosition = position;
+
+        movieId = model.getId();
+        movieTitle =model.getOriginalTitle();
+        movieThumbnailPath = model.getPosterPath();
+        movieReleaseDate = model.getReleaseDate();
+        movieVoteAverage = model.getVoteAverage();
+        movieOverview = model.getOverview();
+
+        checkThisMovieInFavourite(movieId);
+        fillUI();
+        getTrailers();
     }
 }

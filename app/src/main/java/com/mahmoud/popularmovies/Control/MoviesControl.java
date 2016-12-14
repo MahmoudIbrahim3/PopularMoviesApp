@@ -5,7 +5,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.mahmoud.popularmovies.API.MoviesAPI;
-import com.mahmoud.popularmovies.Activity.MoviesActivity;
+import com.mahmoud.popularmovies.Activity.MoviesFragment;
 import com.mahmoud.popularmovies.Model.MoviesModel;
 import com.mahmoud.popularmovies.R;
 
@@ -23,6 +23,7 @@ public class MoviesControl {
     private String TAG = "MoviesControl";
     
     public void getMovies(final Activity activity, String sortType, final int page){
+        Log.e(TAG, "getMovies");
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(Keys.DOMAIN)
@@ -42,7 +43,7 @@ public class MoviesControl {
 
                 if(response.code() == Keys.SUCCESS){
                     int page2 = page + 1;
-                    MoviesActivity moviesActivity = new MoviesActivity();
+                    MoviesFragment moviesActivity = new MoviesFragment();
                     moviesActivity.showMovies(activity, response.body().getResults(), page2);
                 }
             }
@@ -52,7 +53,7 @@ public class MoviesControl {
                 Log.e(TAG, "onFailure: " + t.getMessage());
                 Toast.makeText(activity, activity.getResources().getString(
                         R.string.internet_connection_error), Toast.LENGTH_SHORT).show();
-                MoviesActivity moviesActivity = new MoviesActivity();
+                MoviesFragment moviesActivity = new MoviesFragment();
                 moviesActivity.showMovies(activity, null, page);
             }
         });

@@ -206,7 +206,7 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
 
             Log.e(TAG, "isTwoPane: " + isTwoPane);
             if(isTwoPane)
-                mCallback.onArticleSelected(0);
+                mCallback.onArticleSelected(MovieDetailsFragment.mCurrentPosition);
         }
         else {
             listMovies.addAll(list);
@@ -267,7 +267,7 @@ public class MoviesFragment extends Fragment implements AdapterView.OnItemClickL
                 setAdapter(activity);
 
                 if(isTwoPane)
-                    mCallback.onArticleSelected(0);
+                    mCallback.onArticleSelected(MovieDetailsFragment.mCurrentPosition);
             }
             else{
                 setAdapter(activity);

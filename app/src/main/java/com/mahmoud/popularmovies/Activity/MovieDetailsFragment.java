@@ -56,7 +56,7 @@ public class MovieDetailsFragment extends Fragment implements
     private Toolbar toolbar;
     private Activity activity;
     private View view;
-    public static int mCurrentPosition = -1;
+    public static int mCurrentPosition = 0;
 
     @Override
     public void onSaveInstanceState(Bundle outState) {

@@ -30,7 +30,6 @@ import com.mahmoud.popularmovies.Control.Keys;
 import com.mahmoud.popularmovies.Model.MoviesResultModel;
 import com.mahmoud.popularmovies.R;
 
-import static com.mahmoud.popularmovies.Activity.MovieDetailsFragment.mCurrentPosition;
 import static com.mahmoud.popularmovies.Activity.MoviesFragment.adapter;
 import static com.mahmoud.popularmovies.Activity.MoviesFragment.listMovies;
 import static com.mahmoud.popularmovies.Activity.MoviesFragment.page;
@@ -94,7 +93,6 @@ public class MainActivity extends AppCompatActivity
 
     private void restoreInstanceState(Bundle savedInstanceState) {
         listType = savedInstanceState.getInt("list_type");
-        mCurrentPosition = savedInstanceState.getInt("current_position");
         //page = savedInstanceState.getInt("page");
         //preLast = savedInstanceState.getInt("pre_last");
     }
@@ -104,7 +102,6 @@ public class MainActivity extends AppCompatActivity
         super.onSaveInstanceState(savedInstanceState);
 
         savedInstanceState.putInt("list_type", listType);
-        savedInstanceState.putInt("current_position", mCurrentPosition);
         //savedInstanceState.putInt("page", page);
         //savedInstanceState.putInt("pre_last", preLast);
         Log.e(TAG, "listType: " + listType);
@@ -144,6 +141,7 @@ public class MainActivity extends AppCompatActivity
 
             switch (item.getItemId()) {
                 case R.id.action_most_popular:
+                    MovieDetailsFragment.mCurrentPosition = 0;
                     listType = MOST_POPULAR;
                     getSupportActionBar().setTitle(getResources().getString(R.string.action_most_popular));
                     listMovies = null;
@@ -153,6 +151,7 @@ public class MainActivity extends AppCompatActivity
                     break;
 
                 case R.id.action_top_rated:
+                    MovieDetailsFragment.mCurrentPosition = 0;
                     listType = TOP_RATED;
                     getSupportActionBar().setTitle(getResources().getString(R.string.action_top_rated));
                     listMovies = null;
@@ -162,6 +161,7 @@ public class MainActivity extends AppCompatActivity
                     break;
 
                 case R.id.action_my_favourites:
+                    MovieDetailsFragment.mCurrentPosition = 0;
                     listType = MY_FAVOURITE;
                     getSupportActionBar().setTitle(getResources().getString(R.string.action_my_favourites));
                     DB db = new DB(this);
@@ -175,7 +175,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onArticleSelected(int position) {
-        // The user selected the headline of an article from the HeadlinesFragment
 
         // Capture the article fragment from the activity layout
         MovieDetailsFragment movieDetailsFragment = (MovieDetailsFragment)
